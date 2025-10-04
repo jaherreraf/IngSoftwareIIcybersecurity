@@ -1,0 +1,19 @@
+# Dependencias y Compilación
+/node_modules
+/dist
+/build
+/temp
+/venvMacos
+*.log
+
+# Variables de Entorno y Claves
+.env
+.env.local
+*.pem
+
+# Archivos del Sistema Operativo y IDE
+.DS_Store
+Thumbs.db
+/npm-debug.log
+.vscode/
+.idea/
