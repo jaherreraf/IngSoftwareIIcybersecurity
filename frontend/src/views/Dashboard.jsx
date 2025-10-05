@@ -9,6 +9,10 @@ import Message from "../components/Message";
 import axios from "axios";
 import 'react-circular-progressbar/dist/styles.css';
 import { CircularProgressbar } from 'react-circular-progressbar';
+import { DocumentMagnifyingGlassIcon } from '@heroicons/react/24/outline';
+import { AdjustmentsVerticalIcon } from '@heroicons/react/24/outline';
+import { ChartBarIcon } from '@heroicons/react/24/outline';
+import { ArrowDownTrayIcon, ChevronUpIcon, ChevronDownIcon } from '@heroicons/react/24/outline';
 
 // importación de supabase eliminada
 
@@ -86,9 +90,9 @@ function Dashboard({ setUser }) {
   })
   const [selectNavbar, setSelectNavbar] = useState(0);
   const [options, setOptions] = useState(
-    [{ title: 'Escaner Archivo', icon: <svg className="size-6 text-slate-900 dark:text-slate-50 font-bold hover:text-purple-500 transition-all duration-300 ease-in-out" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true" data-slot="icon" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.3v-2.7a3.4 3.4 0 0 0-3.4-3.3h-1.5A1.1 1.1 0 0 1 13.5 7V5.6a3.4 3.4 0 0 0-3.4-3.3H8.3m2.2 0H5.6c-.6 0-1.1.5-1.1 1v17.3c0 .6.5 1.1 1.1 1.1h12.8c.6 0 1.1-.5 1.1-1v-9.4a9 9 0 0 0-9-9Z" /></svg> },
-    { title: 'Extractor de String', icon: <svg className="size-6 text-slate-900 dark:text-slate-50 font-bold hover:text-purple-500 transition-all duration-300 ease-in-out" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true" data-slot="icon" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="m15 11.3 1.5 1.4.8-.7V8.8l2.2-.7A3 3 0 1 0 16 4.5l-.7 2.3H12l-.8.7L12.8 9m2.2 2.3-8.5 8.4c-.3.4-.8.5-1.3.5s-.9.2-1.2.6l-1 1-.8-.8 1-1c.4-.3.5-.8.5-1.2s.2-1 .6-1.3L12.7 9m2.3 2.3L12.7 9" /></svg> },
-    { title: 'Historial', icon: <svg className="size-6 text-slate-900 dark:text-slate-50 font-bold hover:text-purple-500 transition-all duration-300 ease-in-out" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true" data-slot="icon" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M3 13.1c0-.6.5-1.1 1.1-1.1h2.3c.6 0 1.1.5 1.1 1.1V20c0 .6-.5 1.1-1.1 1.1H4A1.1 1.1 0 0 1 3 19.9V13Zm6.8-4.5c0-.6.5-1.1 1-1.1h2.3c.6 0 1.2.5 1.2 1.1V20c0 .6-.6 1.1-1.2 1.1H11a1.1 1.1 0 0 1-1.2-1.1V8.6Zm6.7-4.5c0-.6.5-1.1 1.1-1.1H20c.6 0 1.1.5 1.1 1.1V20c0 .6-.5 1.1-1.1 1.1h-2.3a1.1 1.1 0 0 1-1.1-1.1V4Z" /></svg> }
+    [{ title: 'Escaner Archivo', icon: <DocumentMagnifyingGlassIcon className="size-6 text-slate-900 dark:text-slate-50 font-bold hover:text-purple-500 transition-all duration-300 ease-in-out"/> },
+    { title: 'Extractor de String', icon: <AdjustmentsVerticalIcon className="size-6 text-slate-900 dark:text-slate-50 font-bold hover:text-purple-500 transition-all duration-300 ease-in-out"/> },
+    { title: 'Historial', icon: <ChartBarIcon className="size-6 text-slate-900 dark:text-slate-50 font-bold hover:text-purple-500 transition-all duration-300 ease-in-out"/>}
     ]
   )
   const activeScanId = useRef(0); // invalidar resultados de scans previos
@@ -412,11 +416,10 @@ function Dashboard({ setUser }) {
   return (
     // Nota: se removió h-screen y overflow-hidden para permitir scroll vertical.
     <div className="App w-screen min-h-screen bg-slate-100 dark:bg-slate-900 overflow-x-hidden font-ubuntu">
-      <div className="w-full md:max-h-screen grid md:grid-cols-7 min-h-full">
+      <div className="w-full lg:max-h-screen flex items-start justify-start min-h-full">
         {/* --- Sidebar Desktop --- */}
-        <Sidebar user={user} setUser={setUser} options={options} onItemClick={handleSidebarSelected} />
-        <div className="bg-red-300  md:col-span-1 left-[100vw] md:left-0 fixed md:static h-[100vh]">
-        
+        <Sidebar isMobileMenuOpen={isMobileMenuOpen} user={user} setUser={setUser} options={options} onItemClick={handleSidebarSelected} />
+        <div className="w-48 lg:left-0 hidden lg:block lg:static h-[100vh]">
         </div>
 
         {/* Overlay oscuro para el móvil */}
@@ -428,19 +431,204 @@ function Dashboard({ setUser }) {
           </div>
         )}
         {/* --- Contenido Principal Condicional --- */}
-        <div id="content" className="w-screen md:w-full md:col-span-6 flex flex-col gap-6 p-6 flex-1 overflow-y-auto transition-all duration-300 ease-in-out">
+        <div id="content" className="w-screen lg:w-full h-screen md:col-span-6 flex flex-col gap-6 p-6 flex-1 overflow-y-auto transition-all duration-300 ease-in-out">
 
           {/* --- Barra superior --- */}
           <div className="bg-white dark:bg-slate-950 rounded-xl shadow-sm p-4 flex items-center justify-between border border-gray-200 dark:border-slate-800">
             <div className="flex items-center gap-4">
-              <svg onClick={() => setIsMobileMenuOpen(true)} className="size-8 text-slate-900 dark:text-slate-100 md:hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><path stroke="#464455" strokeLinecap="round" strokeLinejoin="round" d="M5 8h8.8M5 12h14m-8.8 4H19" /></svg>
-              <h1 className="text-xl font-semibold text-gray-800 dark:text-gray-200">Dashboard de Análisis</h1>
+              <svg onClick={() =>setIsMobileMenuOpen(true)} className="size-8 text-slate-900 dark:text-slate-100 md:hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><path stroke="#464455" strokeLinecap="round" strokeLinejoin="round" d="M5 8h8.8M5 12h14m-8.8 4H19" /></svg>
+              <h1 className="text-xl font-semibold text-gray-800 dark:text-gray-200">MalwareScan</h1>
             </div>
             <Theme />
           </div>
           {/* --- Nuevo diseño para el archivo cargado --- */}
-          {file && selectNavbar != 2 && (
-            <div className="bg-white dark:bg-slate-950 p-6 rounded-xl shadow-sm flex flex-col border border-gray-200 dark:border-slate-800">
+          {file && selectNavbar != 2 && <FileDisplay file={file}/>}
+          {!file && selectNavbar != 2 && <FileDropZone file={file} selectNavbar={selectNavbar} handleFileChange={handleFileChange}/>}
+      
+
+          {/* Renderiza el área de carga solo si no hay un archivo */}
+          {selectNavbar == 0 && <Scan file={file} maliciousCount={maliciousCount} totalAnalyzers={totalAnalyzers} analysisResult={analysisResult} isScanning={isScanning} scanFile={scanFile} handleEmptyFile={handleEmptyFile} quicksand={quicksand}></Scan>}
+          {selectNavbar == 1 && <ARV_extractor file={file} />}
+          {selectNavbar == 2 && <History />}
+
+        </div>
+      </div>
+      {
+        msgError.state && <Message msg={msgError.msg} onComplete={handleMsgError} />
+      }
+    </div>
+  );
+}
+const ScanProgressCircle = ({ maliciousCount, totalAnalyzers }) => {
+  const percentage = (maliciousCount / totalAnalyzers) * 100;
+  const textColor = maliciousCount > 0 ? '#ef4444' : '#10b981'; // Rojo si es malicioso, verde si es seguro
+
+  return (
+    <div style={{ width: 140, height: 140 }} className="relative float-left">
+      <CircularProgressbar
+        value={percentage}
+        text={`${maliciousCount}/${totalAnalyzers}`}
+        styles={{
+          path: {
+            stroke: maliciousCount > 0 ? '#ef4444' : '#10b981',
+            strokeLinecap: 'round',
+            transition: 'stroke-dashoffset 0.5s ease 0s',
+          },
+          trail: {
+            stroke: '#e5e7eb',
+          },
+          text: {
+            fill: textColor,
+            fontSize: '16px',
+            fontWeight: 'bold',
+          },
+        }}
+      />
+      <div className="absolute inset-0 flex items-center justify-center flex-col">
+        <div className="text-xs text-gray-500 mt-12">detectados</div>
+      </div>
+    </div>
+  );
+};
+// Mensajes a rotar
+const MESSAGES = ["Arrastra y suelta tu archivo aquí", "o haz clic y explora tu dispositivo"
+];
+
+function FileDropZone({ file, selectNavbar, handleFileChange }) {
+    
+    // ESTADOS Y REFERENCIAS
+    const [isExpanded, setIsExpanded] = useState(true);
+    const arrowRef = useRef(null); 
+    const contentRef = useRef(null); 
+     const nameRefs = useRef([]);
+    nameRefs.current = [];
+
+    const addToRefs = (el) => {
+        if (el && !nameRefs.current.includes(el)) {
+            nameRefs.current.push(el);
+        }
+    };
+    useEffect(() => {
+        if (arrowRef.current && isExpanded) {
+            gsap.to(arrowRef.current, {
+                y: 10,
+                duration: 1.2,
+                ease: "power1.inOut",
+                repeat: -1,
+                yoyo: true,
+            });
+        }
+        return () => {
+            if (arrowRef.current) {
+                gsap.killTweensOf(arrowRef.current);
+                gsap.set(arrowRef.current, { y: 0 });
+            }
+        };
+    }, [isExpanded, file]);
+
+    // ------------------------------------------------------------------------
+    // EFECTO 2: Animación de COLAPSO/EXPANSIÓN del contenido (GSAP)
+    // ------------------------------------------------------------------------
+    useEffect(() => {
+        if (contentRef.current) {
+            gsap.to(contentRef.current, {
+                height: isExpanded ? "auto" : 0, 
+                paddingTop: isExpanded ? '1rem' : 0, 
+                paddingBottom: isExpanded ? '1rem' : 0,
+                opacity: isExpanded ? 1 : 0,
+                duration: 0.5, 
+                ease: "power2.inOut",
+                overflow: 'hidden', 
+            });
+        }
+    }, [isExpanded]);
+
+    // ------------------------------------------------------------------------
+    // EFECTO 3: Rotación de Mensajes (ADAPTADO DE TU CÓDIGO)
+    // ------------------------------------------------------------------------
+    useEffect(() => {
+            const tl = gsap.timeline({
+                repeat: -1,
+                repeatDelay: 0,
+            });
+    
+            gsap.set(nameRefs.current, { autoAlpha: 0, y: 10 });
+    
+            nameRefs.current.forEach((name, index) => {
+                tl.to(name, {
+                    duration: 0.5,
+                    autoAlpha: 1,
+                    y: 0,
+                    ease: "power2.out",
+                }, "+=0.5")
+                    .to(name, {
+                        duration: 0.5,
+                        autoAlpha: 0,
+                        y: -10,
+                        ease: "power2.in",
+                    }, "+=1.5");
+            });
+    
+            return () => tl.kill();
+        }, []);
+    // ------------------------------------------------------------------------
+    // RENDERIZADO
+    // ------------------------------------------------------------------------
+    if (file || selectNavbar === 2) {
+      return (
+        <></>
+      );
+    }
+
+    return (
+        <div className="bg-white dark:bg-slate-950 p-4 rounded-xl shadow-sm flex flex-col h-fit text-center border border-gray-200 dark:border-slate-800">
+
+            {/* ENCABEZADO */}
+            <div className="flex items-center justify-between">
+                <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-200 text-left">
+                    Escanea tu archivo ahora
+                </h2>
+                <button 
+                    onClick={() => setIsExpanded(!isExpanded)} 
+                    className="p-1 rounded-full text-gray-500 hover:text-blue-500 transition-colors"
+                >
+                    {isExpanded ? (<ChevronUpIcon className="size-6" />) : (<ChevronDownIcon className="size-6" />)}
+                </button>
+            </div>
+
+            {/* CONTENIDO COLAPSABLE */}
+            <div ref={contentRef} className="flex flex-col items-center justify-center pt-4"> 
+                
+                <label 
+                    htmlFor="file-upload" 
+                    className="relative w-full flex flex-col items-center justify-center border-2 border-dashed border-gray-300 dark:border-slate-700 rounded-2xl p-6 transition-colors duration-200 hover:border-blue-500 cursor-pointer"
+                >
+                    
+                    {/* ÍCONO ANIMADO */}
+                    <div ref={arrowRef} className="inline-block"> 
+                      <ArrowDownTrayIcon className="size-12 text-blue-800 dark:text-blue-300 mb-4"/>
+                    </div>
+
+                {MESSAGES.map((name) => (
+                <span
+                    key={name}
+                    ref={addToRefs}
+                    className="absolute bottom-2  font-semibold text-blue-800 dark:text-blue-300 whitespace-nowrap"
+                >
+                    {name}
+                </span>
+            ))}
+                    
+                    <input type="file" onChange={handleFileChange} id="file-upload" className="opacity-0 z-10 absolute size-full cursor-pointer" />
+                </label>
+            </div>
+        </div>
+    );
+}
+
+function FileDisplay({file}){
+  return(
+    <div className="bg-white dark:bg-slate-950 p-6 rounded-xl shadow-sm flex flex-col border border-gray-200 dark:border-slate-800">
               {/* Contenedor principal para la información del archivo y el círculo */}
               <div className="flex flex-col md:flex-row justify-between items-start mb-6 w-full">
                 {/* Contenedor del círculo */}
@@ -530,67 +718,7 @@ function Dashboard({ setUser }) {
                 </div>
               </div>
             </div>
-          )}
-
-          {/* Renderiza el área de carga solo si no hay un archivo */}
-          {!file && selectNavbar != 2 && (
-            <div className="bg-white dark:bg-slate-950 p-8 rounded-xl shadow-sm flex flex-col items-center justify-center text-center border border-gray-200 dark:border-slate-800">
-
-              <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-200 mb-4">Escanea tu archivo ahora</h2>
-              <p className="text-gray-500 mb-6">Arrastra y suelta tu archivo aquí, o haz clic para subirlo.</p>
-
-              <label htmlFor="file-upload" className="w-full h-40 md:h-64 flex flex-col items-center justify-center border-2 border-dashed border-gray-300 dark:border-slate-700 rounded-2xl p-6 transition-colors duration-200 hover:border-blue-500 cursor-pointer">
-                <svg xmlns="http://www.w3.org/2000/svg" className="size-12 text-gray-400 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-                </svg>
-                <span className="mt-2 text-gray-600 dark:text-gray-400 font-medium">
-                  Arrastra tu archivo aquí o <span className="text-blue-600 dark:text-blue-500">busca en tu dispositivo</span>
-                </span>
-                <input type="file" onChange={handleFileChange} id="file-upload" className="opacity-0 absolute size-64 cursor-pointer" />
-              </label>
-            </div>
-          )}
-          {selectNavbar == 0 && <Scan file={file} maliciousCount={maliciousCount} totalAnalyzers={totalAnalyzers} analysisResult={analysisResult} isScanning={isScanning} scanFile={scanFile} handleEmptyFile={handleEmptyFile} quicksand={quicksand}></Scan>}
-          {selectNavbar == 1 && <ARV_extractor file={file} />}
-          {selectNavbar == 2 && <History />}
-
-        </div>
-      </div>
-      {
-        msgError.state && <Message msg={msgError.msg} onComplete={handleMsgError} />
-      }
-    </div>
-  );
+  )
 }
-const ScanProgressCircle = ({ maliciousCount, totalAnalyzers }) => {
-  const percentage = (maliciousCount / totalAnalyzers) * 100;
-  const textColor = maliciousCount > 0 ? '#ef4444' : '#10b981'; // Rojo si es malicioso, verde si es seguro
-
-  return (
-    <div style={{ width: 140, height: 140 }} className="relative float-left">
-      <CircularProgressbar
-        value={percentage}
-        text={`${maliciousCount}/${totalAnalyzers}`}
-        styles={{
-          path: {
-            stroke: maliciousCount > 0 ? '#ef4444' : '#10b981',
-            strokeLinecap: 'round',
-            transition: 'stroke-dashoffset 0.5s ease 0s',
-          },
-          trail: {
-            stroke: '#e5e7eb',
-          },
-          text: {
-            fill: textColor,
-            fontSize: '16px',
-            fontWeight: 'bold',
-          },
-        }}
-      />
-      <div className="absolute inset-0 flex items-center justify-center flex-col">
-        <div className="text-xs text-gray-500 mt-12">detectados</div>
-      </div>
-    </div>
-  );
-};
+// export default FileDropZone;
 export default Dashboard;
