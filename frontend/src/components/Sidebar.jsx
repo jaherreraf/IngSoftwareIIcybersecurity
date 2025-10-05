@@ -50,7 +50,7 @@ function Sidebar({ isMobileMenuOpen, setUser, user, options, selectNavbar, onIte
       ref={sidebarRef}
       className="
             bg-white dark:bg-slate-950 flex flex-col items-center justify-between p-6 shadow-xl  border-gray-200 dark:border-slate-800
-             w-2/3 md:w-48 fixed left-[-100vw] lg:left-0 transition-all duration-300 ease-in-out h-screen z-20 md:z-0 border-r
+             w-2/3 lg:w-60 fixed left-[-100vw] lg:left-0 transition-all duration-300 ease-in-out h-screen z-20 md:z-0 border-r
           "
     >
       <Bars3CenterLeftIcon className="size-8 text-slate-500"/>

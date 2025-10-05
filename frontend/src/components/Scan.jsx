@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { CircularProgressbar } from 'react-circular-progressbar';
 
 function Scan({ file, maliciousCount, analysisResult, isScanning, quicksand }) {
   // Estados para colapsar/expandir
@@ -72,7 +73,8 @@ function Scan({ file, maliciousCount, analysisResult, isScanning, quicksand }) {
             </div>
 
             {/* Panel VirusTotal (estilo restaurado) */}
-            <div className="border border-gray-200 dark:border-slate-800 rounded-lg bg-white dark:bg-slate-950 shadow-sm">
+            <div className="border lg:col-span-2 border-gray-200 dark:border-slate-800 rounded-lg bg-white dark:bg-slate-950 shadow-sm">
+              {/* Contenedor del círculo */}
               <div className="flex items-center justify-between px-4 py-3">
                 <span className="text-lg font-semibold text-gray-900 dark:text-gray-100 uppercase w-full text-center">RESULTADO DE VIRUSTOTAL</span>
                 <button
@@ -84,40 +86,42 @@ function Scan({ file, maliciousCount, analysisResult, isScanning, quicksand }) {
                   <svg className={`h-5 w-5 transform transition-transform ${showVT ? 'rotate-180' : ''}`} viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.51a.75.75 0 01-1.08 0l-4.25-4.51a.75.75 0 01.02-1.06z" clipRule="evenodd" /></svg>
                 </button>
               </div>
-              {showVT && (
-                <div className="overflow-x-auto border-t border-gray-200 dark:border-slate-800 rounded-b-lg max-h-80 custom-scrollbar">
-                  <table className="min-w-full divide-y divide-gray-200 dark:divide-slate-800">
-                    <thead className="bg-gray-50 dark:bg-slate-900">
-                      <tr>
-                        <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Motor</th>
-                        <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Resultado</th>
-                        <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Categoría</th>
-                        <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Actualización</th>
-                      </tr>
-                    </thead>
-                    <tbody className="bg-white dark:bg-slate-950 divide-y divide-gray-200 dark:divide-slate-800">
-                      {Object.keys(analysisResult).map((engineKey) => {
-                        const engine = analysisResult[engineKey];
-                        return (
-                          <tr key={engine.engine_name} className="hover:bg-gray-50 dark:hover:bg-slate-900">
-                            <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">{engine.engine_name}</td>
-                            <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300">{engine.result || 'N/A'}</td>
-                            <td className="px-4 py-3 whitespace-nowrap text-sm">
-                              <span className={`px-2.5 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${engine.category === 'malicious'
-                                ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300'
-                                : engine.category === 'undetected'
-                                  ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300'
-                                  : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300'
-                                }`}>{engine.category}</span>
-                            </td>
-                            <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{engine.engine_update}</td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
-                </div>
-              )}
+                {showVT && (
+                  <div className="overflow-x-auto border-t border-gray-200 dark:border-slate-800 rounded-b-lg max-h-80 custom-scrollbar">
+                    <table className="min-w-full divide-y divide-gray-200 dark:divide-slate-800">
+                      <thead className="bg-gray-50 dark:bg-slate-900">
+                        <tr>
+                          <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Motor</th>
+                          <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Resultado</th>
+                          <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Categoría</th>
+                          <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Actualización</th>
+                        </tr>
+                      </thead>
+                      <tbody className="bg-white dark:bg-slate-950 divide-y divide-gray-200 dark:divide-slate-800">
+                        {Object.keys(analysisResult).map((engineKey) => {
+                          const engine = analysisResult[engineKey];
+                          return (
+                            <tr key={engine.engine_name} className="hover:bg-gray-50 dark:hover:bg-slate-900">
+                              <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">{engine.engine_name}</td>
+                              <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300">{engine.result || 'N/A'}</td>
+                              <td className="px-4 py-3 whitespace-nowrap text-sm">
+                                <span className={`px-2.5 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${engine.category === 'malicious'
+                                  ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300'
+                                  : engine.category === 'undetected'
+                                    ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300'
+                                    : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300'
+                                  }`}>{engine.category}</span>
+                              </td>
+                              <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{engine.engine_update}</td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+
+
             </div>
           </div>
         )}
@@ -127,58 +131,58 @@ function Scan({ file, maliciousCount, analysisResult, isScanning, quicksand }) {
 }
 // Se asume que Quicksand recibe 'state' (el riesgo general) y 'results' (el objeto de resultados detallados)
 function Quicksand({ state, results }) {
-    
-    // 1. Validar si el objeto 'results' existe y está vacío.
-    const hasResults = results && Object.keys(results).length > 0;
 
-    // 2. Si QuickSand no encuentra nada, el objeto 'results' puede ser {}. 
-    //    Si la API devuelve un resultado vacío, 'results' podría ser null.
-    if (!hasResults) {
-        return (
-            // Mensaje de "vacío" o "sin resultados"
-            <div className="w-full">
-                <p className="px-4 py-3 text-center text-lg font-semibold text-gray-900 dark:text-gray-100">
-                    RESULTADO DE QUICKSAND
-                </p>
-                <p className="text-center py-6 text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-slate-900 rounded-lg m-2">
-                    ✅ Análisis completado. No se encontraron indicadores de riesgo detallados en el documento.
-                </p>
-            </div>
-        );
-    }
+  // 1. Validar si el objeto 'results' existe y está vacío.
+  const hasResults = results && Object.keys(results).length > 0;
 
-    // Si hay resultados, renderiza la tabla.
-    // Usaremos Object.entries() para obtener [clave, valor] y mapear los resultados.
-    
-    // NOTA: QuickSand puede devolver un objeto como este:
-    // {
-    //   'archivo.doc': { risk: 'low', tags: ['vba', 'ole'], score: 5 },
-    //   'flujo_0': { risk: 'none', tags: [], score: 0 }
-    // }
-    
+  // 2. Si QuickSand no encuentra nada, el objeto 'results' puede ser {}. 
+  //    Si la API devuelve un resultado vacío, 'results' podría ser null.
+  if (!hasResults) {
     return (
+      // Mensaje de "vacío" o "sin resultados"
+      <div className="w-full">
+        <p className="px-4 py-3 text-center text-lg font-semibold text-gray-900 dark:text-gray-100">
+          RESULTADO DE QUICKSAND
+        </p>
+        <p className="text-center py-6 text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-slate-900 rounded-lg m-2">
+          ✅ Análisis completado. No se encontraron indicadores de riesgo detallados en el documento.
+        </p>
+      </div>
+    );
+  }
+
+  // Si hay resultados, renderiza la tabla.
+  // Usaremos Object.entries() para obtener [clave, valor] y mapear los resultados.
+
+  // NOTA: QuickSand puede devolver un objeto como este:
+  // {
+  //   'archivo.doc': { risk: 'low', tags: ['vba', 'ole'], score: 5 },
+  //   'flujo_0': { risk: 'none', tags: [], score: 0 }
+  // }
+
+  return (
     <table className="min-w-full divide-y divide-gray-200 dark:divide-slate-800">
-            
-            <thead className="bg-gray-50 dark:bg-slate-900 sticky top-0">
-                <tr>
-                    <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                        Ruta / Flujo
-                    </th>
-                    <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                        Riesgo Detectado
-                    </th>
-                    <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                        Puntuación (Score)
-                    </th>
-                    <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                        Tags / Categorías
-                    </th>
-                </tr>
-            </thead>
-            
-            {/* El Tbody va DESPUÉS del Thead */}
-            <tbody className="bg-white dark:bg-slate-800 divide-y divide-gray-200 dark:divide-slate-800">
-                {/* 3. Mapeo del objeto de resultados */}
+
+      <thead className="bg-gray-50 dark:bg-slate-900 sticky top-0">
+        <tr>
+          <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+            Ruta / Flujo
+          </th>
+          <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+            Riesgo Detectado
+          </th>
+          <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+            Puntuación (Score)
+          </th>
+          <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+            Tags / Categorías
+          </th>
+        </tr>
+      </thead>
+
+      {/* El Tbody va DESPUÉS del Thead */}
+      <tbody className="bg-white dark:bg-slate-800 divide-y divide-gray-200 dark:divide-slate-800">
+        {/* 3. Mapeo del objeto de resultados */}
         {Object.entries(results).map(([filePath, data]) => {
           // Caso 1: data es un array (lista de detecciones YARA). Es el formato actual usado por el resto del código.
           if (Array.isArray(data)) {
@@ -200,9 +204,9 @@ function Quicksand({ state, results }) {
 
             const badgeColor =
               derivedRisk === 'high' ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300' :
-              derivedRisk === 'medium' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300' :
-              derivedRisk === 'low' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300' :
-              'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300';
+                derivedRisk === 'medium' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300' :
+                  derivedRisk === 'low' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300' :
+                    'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300';
 
             return (
               <tr key={filePath} className="hover:bg-gray-50 dark:hover:bg-slate-900">
@@ -223,9 +227,9 @@ function Quicksand({ state, results }) {
             const riskLevel = (data.state || data.risk || 'none').toLowerCase();
             const badgeColor =
               riskLevel === 'high' ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300' :
-              riskLevel === 'medium' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300' :
-              riskLevel === 'low' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300' :
-              'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300';
+                riskLevel === 'medium' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300' :
+                  riskLevel === 'low' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300' :
+                    'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300';
             return (
               <tr key={filePath} className="hover:bg-gray-50 dark:hover:bg-slate-900">
                 <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">{filePath}</td>
@@ -246,10 +250,41 @@ function Quicksand({ state, results }) {
             </tr>
           );
         })}
-            </tbody>
-        </table>
-    );
+      </tbody>
+    </table>
+  );
 }
+const ScanProgressCircle = ({ maliciousCount, totalAnalyzers }) => {
+  const percentage = (maliciousCount / totalAnalyzers) * 100;
+  const textColor = maliciousCount > 0 ? '#ef4444' : '#10b981'; // Rojo si es malicioso, verde si es seguro
+
+  return (
+    <div style={{ width: 100, height: 100 }} className="relative float-left">
+      <CircularProgressbar
+        value={percentage}
+        text={`${maliciousCount}/${totalAnalyzers}`}
+        styles={{
+          path: {
+            stroke: maliciousCount > 0 ? '#ef4444' : '#10b981',
+            strokeLinecap: 'round',
+            transition: 'stroke-dashoffset 0.5s ease 0s',
+          },
+          trail: {
+            stroke: '#e5e7eb',
+          },
+          text: {
+            fill: textColor,
+            fontSize: '16px',
+            fontWeight: 'bold',
+          },
+        }}
+      />
+      <div className="absolute inset-0 flex items-center justify-center flex-col">
+        <div className="text-xs text-gray-500 mt-12">detectados</div>
+      </div>
+    </div>
+  );
+};
 
 // export default Quicksand; // Descomenta si usas export default
 export default Scan

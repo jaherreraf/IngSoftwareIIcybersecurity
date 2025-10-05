@@ -419,7 +419,7 @@ function Dashboard({ setUser }) {
       <div className="w-full lg:max-h-screen flex items-start justify-start min-h-full">
         {/* --- Sidebar Desktop --- */}
         <Sidebar isMobileMenuOpen={isMobileMenuOpen} user={user} setUser={setUser} options={options} onItemClick={handleSidebarSelected} />
-        <div className="w-48 lg:left-0 hidden lg:block lg:static h-[100vh]">
+        <div className="w-60 lg:left-0 hidden lg:block lg:static h-[100vh]">
         </div>
 
         {/* Overlay oscuro para el móvil */}
@@ -680,7 +680,7 @@ function FileDropZone({ file,  handleFileChange, maliciousCount, totalAnalyzers,
 
                   <div className="w-full flex items-center justify-between mt-auto">
                     <p className="text-sm text-gray-500 dark:text-gray-400">
-                      <span className="font-semibold text-red-600 dark:text-red-500">{maliciousCount}</span> de <span className="font-semibold">{totalAnalyzers}</span> motores de análisis detectaron el archivo como malicioso.
+                      <span className="font-semibold text-red-600 dark:text-red-500">{maliciousCount}</span> de <span className="font-semibold">{totalAnalyzers}</span> motores de análisis de Virus Total detectaron el archivo como malicioso.
                     </p>
                     <button
                       onClick={scanFile}
