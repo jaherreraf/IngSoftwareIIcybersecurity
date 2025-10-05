@@ -6,11 +6,16 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 const nodemailer = require('nodemailer');
+const { GoogleGenerativeAI } = require('@google/genai');
 
 const app = express();
 app.use(cors());
 app.use(express.json());
-
+const apiKey = process.env.GEMINI_API_KEY;
+if (!apiKey) {
+    throw new Error("La variable de entorno GEMINI_API_KEY no está configurada.");
+}
+const genAI = new GoogleGenerativeAI(apiKey);
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
 });
@@ -265,6 +270,25 @@ app.delete('/api/files/:file_id', async (req, res) => {
     res.status(500).json({ error: 'Error al eliminar archivo.' });
   }
 })
+app.post('/api/generar-analisis', async (req, res) => {
+    try {
+        // Asegúrate de enviar el prompt y los datos necesarios desde el frontend (req.body)
+        const { prompt } = req.body; 
+
+        const response = await genAI.models.generateContent({
+            model: 'gemini-2.5-flash',
+            contents: [{ role: "user", parts: [{ text: prompt }] }],
+            // Puedes añadir más configuraciones aquí (como el JSON schema si es necesario)
+        });
+
+        // Envía la respuesta de Gemini de vuelta al frontend de React
+        res.json({ result: response.text });
+        
+    } catch (error) {
+        console.error("Error al llamar a Gemini:", error);
+        res.status(500).json({ error: 'Fallo en el análisis de Gemini.' });
+    }
+});
 
 app.listen(3001, () => {
   console.log('Servidor backend en http://localhost:3001');

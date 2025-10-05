@@ -90,9 +90,9 @@ function Dashboard({ setUser }) {
   })
   const [selectNavbar, setSelectNavbar] = useState(0);
   const [options, setOptions] = useState(
-    [{ title: 'Escaner Archivo', icon: <DocumentMagnifyingGlassIcon className="size-6 text-slate-900 dark:text-slate-50 font-bold hover:text-purple-500 transition-all duration-300 ease-in-out"/> },
-    { title: 'Extractor de String', icon: <AdjustmentsVerticalIcon className="size-6 text-slate-900 dark:text-slate-50 font-bold hover:text-purple-500 transition-all duration-300 ease-in-out"/> },
-    { title: 'Historial', icon: <ChartBarIcon className="size-6 text-slate-900 dark:text-slate-50 font-bold hover:text-purple-500 transition-all duration-300 ease-in-out"/>}
+    [{ title: 'Escaner Archivo', icon: <DocumentMagnifyingGlassIcon className="size-6 text-slate-900 dark:text-slate-50 font-bold hover:text-purple-500 transition-all duration-300 ease-in-out" /> },
+    { title: 'Extractor de String', icon: <AdjustmentsVerticalIcon className="size-6 text-slate-900 dark:text-slate-50 font-bold hover:text-purple-500 transition-all duration-300 ease-in-out" /> },
+    { title: 'Historial', icon: <ChartBarIcon className="size-6 text-slate-900 dark:text-slate-50 font-bold hover:text-purple-500 transition-all duration-300 ease-in-out" /> }
     ]
   )
   const activeScanId = useRef(0); // invalidar resultados de scans previos
@@ -388,6 +388,51 @@ function Dashboard({ setUser }) {
       } catch (error) {
         console.error('Ocurrió un error inesperado:', error);
       }
+    try {
+      // ... (Configuración de dotenv y GoogleGenerativeAI) ...
+
+      // Tu endpoint para recibir los datos de React
+      app.post('/api/generar-analisis', async (req, res) => {
+        try {
+          // 1. Recibe los datos de la detección del frontend
+          console.log('generar analisis')
+          const { motor, deteccion } = req.body;
+
+          if (!motor || !deteccion) {
+            return res.status(400).json({ error: "Faltan datos (motor o detección)." });
+          }
+
+          // 2. Genera el prompt con los datos del usuario
+          const prompt = createMalwareAnalysisPrompt(motor, deteccion);
+
+          // 3. Llama a Gemini, solicitando explícitamente una respuesta JSON
+          const response = await genAI.models.generateContent({
+            model: 'gemini-2.5-flash',
+            contents: [{ role: "user", parts: [{ text: prompt }] }],
+            config: {
+              responseMimeType: "application/json",
+            }
+          });
+
+          // 4. Parsea el texto de la respuesta (debe ser JSON)
+          const jsonText = response.text.trim();
+          const analisisJSON = JSON.parse(jsonText);
+
+          // 5. Envía el JSON limpio de vuelta al frontend de React
+          res.json(analisisJSON);
+          console.log(analisisJSON)
+
+        } catch (error) {
+          console.error("Error en la API de análisis:", error);
+          res.status(500).json({
+            error: 'Fallo al procesar la solicitud con Gemini.',
+            details: error.message
+          });
+        }
+      });
+    } catch (err) {
+      console.error(err)
+    }
   }
 
   function handleEmptyFile() {
@@ -396,7 +441,7 @@ function Dashboard({ setUser }) {
     setAnalysisResult(null);        // limpia resultados
     setFile(null);                  // limpia archivo
   }
-  function handleSidebarSelected(data){
+  function handleSidebarSelected(data) {
     console.log("SELECT NAVBAR: ", data);
     setSelectNavbar(data);
   }
@@ -436,13 +481,13 @@ function Dashboard({ setUser }) {
           {/* --- Barra superior --- */}
           <div className="bg-white dark:bg-slate-950 rounded-xl shadow-sm p-4 flex items-center justify-between border border-gray-200 dark:border-slate-800">
             <div className="flex items-center gap-4">
-              <svg onClick={() =>setIsMobileMenuOpen(true)} className="size-8 text-slate-900 dark:text-slate-100 md:hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><path stroke="#464455" strokeLinecap="round" strokeLinejoin="round" d="M5 8h8.8M5 12h14m-8.8 4H19" /></svg>
+              <svg onClick={() => setIsMobileMenuOpen(true)} className="size-8 text-slate-900 dark:text-slate-100 md:hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><path stroke="#464455" strokeLinecap="round" strokeLinejoin="round" d="M5 8h8.8M5 12h14m-8.8 4H19" /></svg>
               <h1 className="text-xl font-semibold text-gray-800 dark:text-gray-200">MalwareScan</h1>
             </div>
             <Theme />
           </div>
           {/* --- Nuevo diseño para el archivo cargado --- */}
-          { selectNavbar != 2 && <FileDropZone file={file} selectNavbar={selectNavbar} handleFileChange={handleFileChange } maliciousCount={maliciousCount} totalAnalyzers={totalAnalyzers} handleEmptyFile={handleEmptyFile} scanFile={scanFile} isScanning={isScanning}/>}
+          {selectNavbar != 2 && <FileDropZone file={file} selectNavbar={selectNavbar} handleFileChange={handleFileChange} maliciousCount={maliciousCount} totalAnalyzers={totalAnalyzers} handleEmptyFile={handleEmptyFile} scanFile={scanFile} isScanning={isScanning} />}
           {/* Renderiza el área de carga solo si no hay un archivo */}
           {selectNavbar == 0 && <Scan file={file} maliciousCount={maliciousCount} totalAnalyzers={totalAnalyzers} analysisResult={analysisResult} isScanning={isScanning} scanFile={scanFile} handleEmptyFile={handleEmptyFile} quicksand={quicksand}></Scan>}
           {selectNavbar == 1 && <ARV_extractor file={file} />}
@@ -488,225 +533,247 @@ const ScanProgressCircle = ({ maliciousCount, totalAnalyzers }) => {
   );
 };
 // Mensajes a rotar
-const MESSAGES = ["Arrastra y suelta tu archivo aquí", "o haz clic y explora tu dispositivo"
-];
+const MESSAGES = ["Explora tu dispositivo", "Arrastra y suelta"];
 
-function FileDropZone({ file,  handleFileChange, maliciousCount, totalAnalyzers, handleEmptyFile, scanFile, isScanning }) {
-    
-    // ESTADOS Y REFERENCIAS
-    const [isExpanded, setIsExpanded] = useState(true);
-    const arrowRef = useRef(null); 
-    const contentRef = useRef(null); 
-     const nameRefs = useRef([]);
-    nameRefs.current = [];
+function FileDropZone({ file, handleFileChange, maliciousCount, totalAnalyzers, handleEmptyFile, scanFile, isScanning }) {
 
-    const addToRefs = (el) => {
-        if (el && !nameRefs.current.includes(el)) {
-            nameRefs.current.push(el);
-        }
-    };
-    useEffect(() => {
-        if (arrowRef.current && isExpanded) {
-            gsap.to(arrowRef.current, {
-                y: 10,
-                duration: 1.2,
-                ease: "power1.inOut",
-                repeat: -1,
-                yoyo: true,
-            });
-        }
-        return () => {
-            if (arrowRef.current) {
-                gsap.killTweensOf(arrowRef.current);
-                gsap.set(arrowRef.current, { y: 0 });
-            }
-        };
-    }, [isExpanded, file]);
+  // ESTADOS Y REFERENCIAS
+  const [isExpanded, setIsExpanded] = useState(true);
+  const arrowRef = useRef(null);
+  const contentRef = useRef(null);
+  const nameRefs = useRef([]);
+  nameRefs.current = [];
 
-    // ------------------------------------------------------------------------
-    // EFECTO 2: Animación de COLAPSO/EXPANSIÓN del contenido (GSAP)
-    // ------------------------------------------------------------------------
-    useEffect(() => {
-        if (contentRef.current) {
-            gsap.to(contentRef.current, {
-                height: isExpanded ? "auto" : 0, 
-                paddingTop: isExpanded ? '1rem' : 0, 
-                paddingBottom: isExpanded ? '1rem' : 0,
-                opacity: isExpanded ? 1 : 0,
-                duration: 0.5, 
-                ease: "power2.inOut",
-                overflow: 'hidden', 
-            });
-        }
-    }, [isExpanded]);
-
-    // ------------------------------------------------------------------------
-    // EFECTO 3: Rotación de Mensajes (ADAPTADO DE TU CÓDIGO)
-    // ------------------------------------------------------------------------
-    useEffect(() => {
-            const tl = gsap.timeline({
-                repeat: -1,
-                repeatDelay: 0,
-            });
-    
-            gsap.set(nameRefs.current, { autoAlpha: 0, y: 10 });
-    
-            nameRefs.current.forEach((name, index) => {
-                tl.to(name, {
-                    duration: 0.5,
-                    autoAlpha: 1,
-                    y: 0,
-                    ease: "power2.out",
-                }, "+=0.5")
-                    .to(name, {
-                        duration: 0.5,
-                        autoAlpha: 0,
-                        y: -10,
-                        ease: "power2.in",
-                    }, "+=1.5");
-            });
-    
-            return () => tl.kill();
-        }, []);
-    // ------------------------------------------------------------------------
-    // RENDERIZADO
-    // ------------------------------------------------------------------------
-    if (!file) {
-      return (
-        <div className="bg-white dark:bg-slate-950 p-4 rounded-xl shadow-sm flex flex-col h-fit text-center border border-gray-200 dark:border-slate-800">
-
-            {/* ENCABEZADO */}
-            <div className="flex items-center justify-between">
-                <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-200 text-left">
-                    Escanea tu archivo ahora
-                </h2>
-                <button 
-                    onClick={() => setIsExpanded(!isExpanded)} 
-                    className="p-1 rounded-full text-gray-500 hover:text-blue-500 transition-colors"
-                >
-                    {isExpanded ? (<ChevronUpIcon className="size-6" />) : (<ChevronDownIcon className="size-6" />)}
-                </button>
-            </div>
-
-            {/* CONTENIDO COLAPSABLE */}
-            <div ref={contentRef} className="flex flex-col items-center justify-center pt-4"> 
-                
-                <label 
-                    htmlFor="file-upload" 
-                    className="relative w-full flex flex-col items-center justify-center border-2 border-dashed border-gray-300 dark:border-slate-700 rounded-2xl p-6 transition-colors duration-200 hover:border-blue-500 cursor-pointer"
-                >
-                    
-                    {/* ÍCONO ANIMADO */}
-                    <div ref={arrowRef} className="inline-block"> 
-                      <ArrowDownTrayIcon className="size-12 text-blue-800 dark:text-blue-300 mb-4"/>
-                    </div>
-
-                {MESSAGES.map((name) => (
-                <span
-                    key={name}
-                    ref={addToRefs}
-                    className="absolute bottom-2  font-semibold text-blue-800 dark:text-blue-300 whitespace-nowrap"
-                >
-                    {name}
-                </span>
-            ))}
-                    
-                    <input type="file" onChange={handleFileChange} id="file-upload" className="opacity-0 z-10 absolute size-full cursor-pointer" />
-                </label>
-            </div>
-        </div>
-    );
+  const addToRefs = (el) => {
+    if (el && !nameRefs.current.includes(el)) {
+      nameRefs.current.push(el);
     }
-    return(
-    <div className="bg-white dark:bg-slate-950 p-6 rounded-xl shadow-sm flex flex-col border border-gray-200 dark:border-slate-800">
-              {/* Contenedor principal para la información del archivo y el círculo */}
-              <div className="flex flex-col md:flex-row justify-between items-start mb-6 w-full">
-                {/* Contenedor del círculo */}
-                <div className="flex-shrink-0 mb-4 mx-auto md:mr-6 md:mt-2 md:mx-0">
-                  <ScanProgressCircle maliciousCount={maliciousCount} totalAnalyzers={totalAnalyzers} />
-                </div>
+  };
+  useEffect(() => {
+    if (arrowRef.current && isExpanded) {
+      gsap.to(arrowRef.current, {
+        y: 10,
+        duration: 1.2,
+        ease: "power1.inOut",
+        repeat: -1,
+        yoyo: true,
+      });
+    }
+    return () => {
+      if (arrowRef.current) {
+        gsap.killTweensOf(arrowRef.current);
+        gsap.set(arrowRef.current, { y: 0 });
+      }
+    };
+  }, [isExpanded, file]);
 
-                {/* Contenedor de la información del archivo */}
-                <div className="flex-grow flex flex-col min-w-0">
-                  <div className="w-full flex justify-between items-center mb-4">
-                    <h2 className={`text-xl font-bold flex items-center gap-2 ${maliciousCount > 0 ? 'text-red-600 dark:text-red-500' : 'text-green-600 dark:text-green-500'}`}>
-                      {maliciousCount > 0 ? (
-                        <>
-                          <svg className="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856a2 2 0 001.789-2.895L12 3.895 3.333 18.105A2 2 0 005.125 21z" />
-                          </svg>
-                          Malicioso
-                        </>
-                      ) : (
-                        <>
-                          <svg className="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                          </svg>
-                          Seguro
-                        </>
-                      )}
-                    </h2>
-                    <div className="flex items-center gap-2 cursor-pointer" onClick={handleEmptyFile}>
-                      <button className="text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors cursor-pointer">
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                          <path d="M12.9 14.32a8 8 0 11-1.414-1.414L18.586 19.586a2 2 0 01-2.828 2.828l-5.656-5.656z" />
-                        </svg>
-                      </button>
-                      <button className="text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors cursor-pointer">
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                          <path fillRule="evenodd" d="M12.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-2.293-2.293a1 1 0 010-1.414z" clipRule="evenodd" />
-                        </svg>
-                      </button>
-                      <button className="text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors cursor-pointer">
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                          <path fillRule="evenodd" d="M3 3a1 1 0 011-1h12a1 1 0 011 1v1h-14V3zm0 3v13a2 2 0 002 2h10a2 2 0 002-2V6H3zm4-1a1 1 0 100 2h6a1 1 0 100-2H7z" clipRule="evenodd" />
-                        </svg>
-                      </button>
-                    </div>
-                  </div>
+  // ------------------------------------------------------------------------
+  // EFECTO 2: Animación de COLAPSO/EXPANSIÓN del contenido (GSAP)
+  // ------------------------------------------------------------------------
+  useEffect(() => {
+    if (contentRef.current) {
+      gsap.to(contentRef.current, {
+        height: isExpanded ? "auto" : 0,
+        paddingTop: isExpanded ? '1rem' : 0,
+        paddingBottom: isExpanded ? '1rem' : 0,
+        opacity: isExpanded ? 1 : 0,
+        duration: 0.5,
+        ease: "power2.inOut",
+        overflow: 'hidden',
+      });
+    }
+  }, [isExpanded]);
 
-                  <div className="flex flex-col gap-1 mb-4">
-                    <span className="text-xl font-bold text-gray-900 dark:text-gray-100">{file.name}</span>
-                    <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
-                      <span>Tamaño: {(file.size / 1024).toFixed(2)} KB</span>
-                    </div>
-                    <div className="flex items-center gap-2 mt-2">
-                      <span className="bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300 text-xs font-medium px-2 py-0.5 rounded-full">
-                        {file.type || 'Tipo desconocido'}
-                      </span>
-                      {/* Puedes agregar más etiquetas aquí */}
-                    </div>
-                  </div>
+  // ------------------------------------------------------------------------
+  // EFECTO 3: Rotación de Mensajes (ADAPTADO DE TU CÓDIGO)
+  // ------------------------------------------------------------------------
+  useEffect(() => {
+    const tl = gsap.timeline({
+      repeat: -1,
+      repeatDelay: 0,
+    });
 
-                  <div className="w-full flex items-center justify-between mt-auto">
-                    <p className="text-sm text-gray-500 dark:text-gray-400">
-                      <span className="font-semibold text-red-600 dark:text-red-500">{maliciousCount}</span> de <span className="font-semibold">{totalAnalyzers}</span> motores de análisis de Virus Total detectaron el archivo como malicioso.
-                    </p>
-                    <button
-                      onClick={scanFile}
-                      disabled={isScanning}
-                      className={`py-2 px-4 rounded-lg font-semibold transition-colors duration-300 flex items-center gap-2 ${isScanning
-                        ? 'bg-gray-400 cursor-not-allowed text-white'
-                        : 'bg-blue-600 hover:bg-blue-700 cursor-pointer text-white'
-                        }`}
-                    >
-                      {isScanning ? (
-                        <>
-                          <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                          </svg>
-                          Escaneando...
-                        </>
-                      ) : (
-                        'Reanalizar'
-                      )}
-                    </button>
-                  </div>
-                </div>
-              </div>
+    gsap.set(nameRefs.current, { autoAlpha: 0, y: 10 });
+
+    nameRefs.current.forEach((name, index) => {
+      tl.to(name, {
+        duration: 0.5,
+        autoAlpha: 1,
+        y: 0,
+        ease: "power2.out",
+      }, "+=0.5")
+        .to(name, {
+          duration: 0.5,
+          autoAlpha: 0,
+          y: -10,
+          ease: "power2.in",
+        }, "+=1.5");
+    });
+
+    return () => tl.kill();
+  }, []);
+  // ------------------------------------------------------------------------
+  // RENDERIZADO
+  // ------------------------------------------------------------------------
+  if (!file) {
+    return (
+      <div className="bg-white dark:bg-slate-950 p-4 rounded-xl shadow-sm flex flex-col h-fit text-center border border-gray-200 dark:border-slate-800">
+
+        {/* ENCABEZADO */}
+        <div className="flex items-center justify-between">
+          <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-200 text-left">
+            Escanea tu archivo ahora
+          </h2>
+          <button
+            onClick={() => setIsExpanded(!isExpanded)}
+            className="p-1 rounded-full text-gray-500 hover:text-blue-500 transition-colors"
+          >
+            {isExpanded ? (<ChevronUpIcon className="size-6" />) : (<ChevronDownIcon className="size-6" />)}
+          </button>
+        </div>
+
+        {/* CONTENIDO COLAPSABLE */}
+        <div ref={contentRef} className="flex flex-col items-center justify-center pt-4">
+
+          <label
+            htmlFor="file-upload"
+            className="relative w-full flex flex-col items-center justify-center border-2 border-dashed border-gray-300 dark:border-slate-700 rounded-2xl p-6 transition-colors duration-200 hover:border-blue-500 cursor-pointer"
+          >
+
+            {/* ÍCONO ANIMADO */}
+            <div ref={arrowRef} className="inline-block">
+              <ArrowDownTrayIcon className="size-12 text-blue-800 dark:text-blue-300 mb-4" />
             </div>
-    )   
+
+            {MESSAGES.map((name) => (
+              <span
+                key={name}
+                ref={addToRefs}
+                className="absolute bottom-2  font-semibold text-blue-800 dark:text-blue-300 whitespace-nowrap"
+              >
+                {name}
+              </span>
+            ))}
+
+            <input type="file" onChange={handleFileChange} id="file-upload" className="opacity-0 z-10 absolute size-full cursor-pointer" />
+          </label>
+        </div>
+      </div>
+    );
+  }
+  return (
+    <div className="bg-white dark:bg-slate-950 p-6 rounded-xl shadow-sm flex flex-col border border-gray-200 dark:border-slate-800">
+      {/* Contenedor principal para la información del archivo y el círculo */}
+      <div className="flex flex-col md:flex-row justify-between items-start mb-6 w-full">
+        {/* Contenedor del círculo */}
+        <div className="flex-shrink-0 mb-4 mx-auto md:mr-6 md:mt-2 md:mx-0">
+          <ScanProgressCircle maliciousCount={maliciousCount} totalAnalyzers={totalAnalyzers} />
+        </div>
+
+        {/* Contenedor de la información del archivo */}
+        <div className="flex-grow flex flex-col min-w-0">
+          <div className="w-full flex justify-between items-center mb-4">
+            <h2 className={`text-xl font-bold flex items-center gap-2 ${maliciousCount > 0 ? 'text-red-600 dark:text-red-500' : 'text-green-600 dark:text-green-500'}`}>
+              {maliciousCount > 0 ? (
+                <>
+                  <svg className="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856a2 2 0 001.789-2.895L12 3.895 3.333 18.105A2 2 0 005.125 21z" />
+                  </svg>
+                  Malicioso
+                </>
+              ) : (
+                <>
+                  <svg className="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  Seguro
+                </>
+              )}
+            </h2>
+            <div className="flex items-center gap-2 cursor-pointer" onClick={handleEmptyFile}>
+              <button className="text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors cursor-pointer">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                  <path d="M12.9 14.32a8 8 0 11-1.414-1.414L18.586 19.586a2 2 0 01-2.828 2.828l-5.656-5.656z" />
+                </svg>
+              </button>
+              <button className="text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors cursor-pointer">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M12.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-2.293-2.293a1 1 0 010-1.414z" clipRule="evenodd" />
+                </svg>
+              </button>
+              <button className="text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors cursor-pointer">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M3 3a1 1 0 011-1h12a1 1 0 011 1v1h-14V3zm0 3v13a2 2 0 002 2h10a2 2 0 002-2V6H3zm4-1a1 1 0 100 2h6a1 1 0 100-2H7z" clipRule="evenodd" />
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-1 mb-4">
+            <span className="text-xl font-bold text-gray-900 dark:text-gray-100">{file.name}</span>
+            <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+              <span>Tamaño: {(file.size / 1024).toFixed(2)} KB</span>
+            </div>
+            <div className="flex items-center gap-2 mt-2">
+              <span className="bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300 text-xs font-medium px-2 py-0.5 rounded-full">
+                {file.type || 'Tipo desconocido'}
+              </span>
+              {/* Puedes agregar más etiquetas aquí */}
+            </div>
+          </div>
+
+          <div className="w-full flex items-center justify-between mt-auto">
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              <span className="font-semibold text-red-600 dark:text-red-500">{maliciousCount}</span> de <span className="font-semibold">{totalAnalyzers}</span> motores de análisis de Virus Total detectaron el archivo como malicioso.
+            </p>
+            <button
+              onClick={scanFile}
+              disabled={isScanning}
+              className={`py-2 px-4 rounded-lg font-semibold transition-colors duration-300 flex items-center gap-2 ${isScanning
+                ? 'bg-gray-400 cursor-not-allowed text-white'
+                : 'bg-blue-600 hover:bg-blue-700 cursor-pointer text-white'
+                }`}
+            >
+              {isScanning ? (
+                <>
+                  <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  Escaneando...
+                </>
+              ) : (
+                'Reanalizar'
+              )}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
 }
+const createMalwareAnalysisPrompt = (motorAntivirus, nombreDeteccion) => {
+  return `
+    Actúa como un analista de ciberseguridad experto. Tu tarea es analizar la siguiente detección de malware y proporcionar información clara para un usuario final.
+
+    ### Datos de la Detección
+    - Motor Antivirus: ${motorAntivirus}
+    - Nombre de la Detección: ${nombreDeteccion}
+
+    ### Requisitos de la Respuesta
+    1.  **Explicación:** Proporciona un resumen breve y claro (máximo 3 frases) sobre qué es este tipo de malware y qué efectos tiene en un sistema.
+    2.  **Peligrosidad:** Clasifica la amenaza en una de estas categorías: 'ALTO', 'MEDIO', 'BAJO' o 'DESCONOCIDO'.
+    3.  **Manejo de Genéricos:** Si el nombre de la detección es demasiado genérico, ambiguo (e.g., 'Generic', 'Suspicious', solo un hash) o no lo reconoces, la explicación debe ser: "La detección es muy genérica o específica del motor ${motorAntivirus}. No se puede proporcionar un resumen detallado. Se requiere investigación adicional." y la peligrosidad debe ser 'DESCONOCIDO'.
+
+    ### Formato de Salida
+    Debes responder **ÚNICAMENTE** en formato JSON, siguiendo este esquema estricto:
+
+    {
+      "nombre": "${nombreDeteccion}",
+      "explicacion": "Texto de la explicación breve.",
+      "peligrosidad": "ALTO" | "MEDIO" | "BAJO" | "DESCONOCIDO"
+    }
+  `;
+};
 // export default FileDropZone;
 export default Dashboard;
