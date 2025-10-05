@@ -442,10 +442,7 @@ function Dashboard({ setUser }) {
             <Theme />
           </div>
           {/* --- Nuevo diseño para el archivo cargado --- */}
-          {file && selectNavbar != 2 && <FileDisplay file={file}/>}
-          {!file && selectNavbar != 2 && <FileDropZone file={file} selectNavbar={selectNavbar} handleFileChange={handleFileChange}/>}
-      
-
+          { selectNavbar != 2 && <FileDropZone file={file} selectNavbar={selectNavbar} handleFileChange={handleFileChange } maliciousCount={maliciousCount} totalAnalyzers={totalAnalyzers} handleEmptyFile={handleEmptyFile} scanFile={scanFile} isScanning={isScanning}/>}
           {/* Renderiza el área de carga solo si no hay un archivo */}
           {selectNavbar == 0 && <Scan file={file} maliciousCount={maliciousCount} totalAnalyzers={totalAnalyzers} analysisResult={analysisResult} isScanning={isScanning} scanFile={scanFile} handleEmptyFile={handleEmptyFile} quicksand={quicksand}></Scan>}
           {selectNavbar == 1 && <ARV_extractor file={file} />}
@@ -494,7 +491,7 @@ const ScanProgressCircle = ({ maliciousCount, totalAnalyzers }) => {
 const MESSAGES = ["Arrastra y suelta tu archivo aquí", "o haz clic y explora tu dispositivo"
 ];
 
-function FileDropZone({ file, selectNavbar, handleFileChange }) {
+function FileDropZone({ file,  handleFileChange, maliciousCount, totalAnalyzers, handleEmptyFile, scanFile, isScanning }) {
     
     // ESTADOS Y REFERENCIAS
     const [isExpanded, setIsExpanded] = useState(true);
@@ -574,13 +571,8 @@ function FileDropZone({ file, selectNavbar, handleFileChange }) {
     // ------------------------------------------------------------------------
     // RENDERIZADO
     // ------------------------------------------------------------------------
-    if (file || selectNavbar === 2) {
+    if (!file) {
       return (
-        <></>
-      );
-    }
-
-    return (
         <div className="bg-white dark:bg-slate-950 p-4 rounded-xl shadow-sm flex flex-col h-fit text-center border border-gray-200 dark:border-slate-800">
 
             {/* ENCABEZADO */}
@@ -624,10 +616,8 @@ function FileDropZone({ file, selectNavbar, handleFileChange }) {
             </div>
         </div>
     );
-}
-
-function FileDisplay({file}){
-  return(
+    }
+    return(
     <div className="bg-white dark:bg-slate-950 p-6 rounded-xl shadow-sm flex flex-col border border-gray-200 dark:border-slate-800">
               {/* Contenedor principal para la información del archivo y el círculo */}
               <div className="flex flex-col md:flex-row justify-between items-start mb-6 w-full">
@@ -679,8 +669,6 @@ function FileDisplay({file}){
                     <span className="text-xl font-bold text-gray-900 dark:text-gray-100">{file.name}</span>
                     <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
                       <span>Tamaño: {(file.size / 1024).toFixed(2)} KB</span>
-                      <span>•</span>
-                      <span>Análisis reciente: Hace 8 minutos</span> {/* Puedes ajustar esto dinámicamente */}
                     </div>
                     <div className="flex items-center gap-2 mt-2">
                       <span className="bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300 text-xs font-medium px-2 py-0.5 rounded-full">
@@ -718,7 +706,7 @@ function FileDisplay({file}){
                 </div>
               </div>
             </div>
-  )
+    )   
 }
 // export default FileDropZone;
 export default Dashboard;
